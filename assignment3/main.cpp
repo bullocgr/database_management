@@ -5,38 +5,46 @@
 
 using namespace std;
 
-vector<string> readFromFile(string );
+struct Emp {
+	string id, name, bio, manager;
+};
+
+vector<Emp> readFromFile(string );
 
 int main(){
 
-	vector<string> data = readFromFile("Employees.csv");
-	
+
+	vector<Emp> data = readFromFile("Employees.csv");
+	for(int i = 0; i < 50; i++) {
+		cout << i << ": " << data[i].id << endl;
+	}
 	return 0;
 }
 
-vector<string> readFromFile(string fileName) {
-	vector<string> data;
-	ifstream file;
+vector<Emp> readFromFile(string fileName) {
+	struct Emp emp;
+	vector<Emp> data;
 
-	file.open(fileName);
+	ifstream file(fileName.c_str());
 
 	string id, name, bio, manager;
 	int i = 0;
 
-	while(getline(file, id, ',')) {
-		getline(file, name, ',');
-		getline(file, bio, ',');
-		getline(file, manager, '\n');
+	while(getline(file, emp.id, ',')) {
+		getline(file, emp.name, ',');
+		getline(file, emp.bio, ',');
+		getline(file, emp.manager, '\n');
 
-		data.push_back(id);
-		data.push_back(name);
-		data.push_back(bio);
-		data.push_back(manager);
-		// cout << i << ": " << data[i] << endl;
-		// i++;
+		data.push_back(emp);
+
 	}
 
 	return data;
 }
+
+
+
+
+
 
 
