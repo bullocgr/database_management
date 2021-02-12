@@ -19,6 +19,7 @@ struct Emp {
 	string manager; //8 bytes
 };
 
+
 struct Bucket {
 	int id; //same as line of file
 	FILE* pFile; //pointer to block in file
