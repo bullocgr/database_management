@@ -18,10 +18,6 @@ struct Emp {
 	string manager; //8 bytes
 };
 
-struct Bucket {
-
-};
-
 vector<Emp> readFromFile(string );
 string stringToBinary(string );
 int leastSigBits(int , string );
