@@ -19,11 +19,10 @@ struct Emp {
 	string manager; //8 bytes
 };
 
-
 struct Bucket {
 	int id; //same as line of file
 	FILE* pFile; //pointer to block in file
-	// int bytes; //initialize to 4096 bytes
+	int bytes; //initialize to 4096 bytes
 };
 
 vector<Emp> readFromFile(string );
@@ -34,7 +33,7 @@ string bitFlip(string );
 
 int main(){
 
-	//to do:
+	//done:
 	// get the employee id
 	// convert id to binary
 	// get LSB
@@ -44,7 +43,14 @@ int main(){
 	// convert id back to decimal *might be able to just grab original id value
 	// place in bucket with stored local variable by writing id to file
 	// calculate how many bits were used up in the bucket 
-	// store that to local variable and subtract original bytes left - bytes used after emp indexed 
+	// store that to local variable and check that it's less than 4096
+
+
+	//to do:
+	// make dynamic 
+	// overflow
+	// lookup functionality 
+		// print out bucket and employee
 
 
 	int i = 1;
@@ -56,6 +62,7 @@ int main(){
 	vector<Bucket> bucketArray;
 	Bucket bucket;
 	bucket.id = 0;
+	bucket.bytes = 0;
 	bucket.pFile = fopen("EmployeeIndex.txt", "wb");
 
 	bucketArray.push_back(bucket);
@@ -72,12 +79,12 @@ int main(){
 		fwrite(data[0].id.c_str(), sizeof(char), sizeof(data[0].id), bucketArray[0].pFile);
 	}
 
-	// sizeof(data[0])
-	//create bucket array
-	//skip index 0 to keep id and indexes the same
 
-	// cout << bucketArray[0].pFile << endl;
-
+    if(bucket.bytes + sizeof(data[0]) > 4096) {
+    	//overflow
+    } else {
+    	bucket.bytes += sizeof(data[0]);
+    }
 	return 0;
 }
 
