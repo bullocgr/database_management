@@ -54,42 +54,69 @@ int main(){
 	// lookup functionality 
 		// print out bucket and employee
 
+	//check the size of bucket to see if we can write emp to that bucket
+		//if less than 4096 then write to the bucket
+		//otherwise flag for overflow
 
 	int i = 1;
 	int n = 1;
+	int j = 0;
 	filePointer = fopen("EmployeeIndex.txt", "wb");
 	vector<Emp> data = readFromFile("Employees.csv");
 
 	vector<Bucket> bucketArray;
 	Bucket bucket;
 	
-	for(int i = 0; i < 3; i++) {
-		bucket.id = i;
+	for(int x = 1; x < 3; x++) {
+		bucket.id = x-1;
+		cout << "bucket ID :::::::::::::::::: "  << bucket.id << endl;
 		bucket.bytes = 0;
-		bucket.pFile = fseek(filePointer, 4096*i, SEEK_SET);
+		bucket.pFile = fseek(filePointer, 4096*x, SEEK_SET);
 		bucketArray.push_back(bucket);
 
-		string binaryId = stringToBinary(data[i].id);
+		// cout << data[x]
+
+		string binaryId = stringToBinary(data[j].id);
 		string LSB = leastSigBits(i, binaryId);
 
 		//check to see if bucket is full before inputting next emp
-		string bitFlipString;
 		//might need to be more iterable
-		if(to_string(bucketArray[i].id) != LSB) {
-			// cout << "NEED TO BIT FLIP" << endl;
+
+		string bitFlipString;
+		//convert id to binary
+		string bucketId = stringToBinary(to_string(bucketArray[j].id));
+		string bucketLSB = leastSigBits(i, bucketId);
+
+		cout << x << "LEAST SIG BITS: " <<LSB << endl;
+		// cout << x << "BUCKET LSB"
+
+		if(bucketLSB != LSB) {
 			bitFlipString = bitFlip(LSB);
+			cout << x << "FLIP THE BITS" << endl;
+			// cout << "bit flip string: " << bitFlipString << endl;
+		} else {
+			bitFlipString = LSB;
 		}
 
-		if(to_string(bucketArray[i].id) == bitFlipString) {
-			fwrite(data[i].id.c_str(), sizeof(char), sizeof(data[i].id), filePointer);
+		cout << x << "bit flip string: " << bitFlipString << endl;
+		cout << x << "bucket lsb: " << bucketLSB << endl;
+		if(bucketLSB == bitFlipString) {
+			cout << x << "ENTER bucket" << endl;
+			fwrite(data[j].id.c_str(), sizeof(char), sizeof(data[j].id), filePointer);
 		}
 
 
-		if(bucket.bytes + sizeof(data[i]) > 4096) {
+		if(bucketArray[j].bytes + sizeof(data[j]) > 4096) {
+			cout << "overflow" << endl;
 			//overflow
 		} else {
-			bucket.bytes += sizeof(data[i]);
+			bucketArray[j].bytes += sizeof(data[j]);
+			cout << "bytes: " << bucketArray[j].bytes << endl;
 		}
+
+		cout << "EMPLOYEE DATA: " << data[j].id << endl;
+
+		j++;
 	}
 
 	
