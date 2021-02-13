@@ -72,8 +72,16 @@ int main(){
 
 	vector<Emp> employees = readFromFile("Employees.csv");
 
-	bool flipBitsBool = checkToFlipBits(employees[index], bucketArray, i);
-	storeRecord(employees[index], bucketArray, flipBitsBool, i);
+
+	for(index = 0; index < 5; index++) {
+		cout << "========== " << index << " ==========" << endl;
+		cout << "EMPLOYEES: " << employees[index].id << endl;
+
+		bool flipBitsBool = checkToFlipBits(employees[index], bucketArray, i);
+		storeRecord(employees[index], bucketArray, flipBitsBool, i);
+	}
+
+
 
 	return 0;
 }
@@ -179,6 +187,8 @@ bool checkToFlipBits(Emp emp, vector<Bucket> bucketArray, int i) {
 		string leastSigBucketBits = leastSigBits(i, binaryBucketId);
 
 		if(leastSigBucketBits == leastSigEmpBits) {
+			// cout <<"NO BITS FLIPPED" << endl;
+			cout << "LEAST SIG EMP BITS: " << leastSigEmpBits << endl;
 			return false;
 		}
 
@@ -195,26 +205,46 @@ bool checkToFlipBits(Emp emp, vector<Bucket> bucketArray, int i) {
  * and use that value to check bucket id for indexing
  * otherwise skip bit flipping and just check for the bucket id
  */
-
-//TO DO for function:
-//instead of just printing write to the file instead
 void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) {
 	string binaryEmpId = stringToBinary(emp.id);
 	string leastSigEmpId = leastSigBits(i, binaryEmpId);
 	string binaryEmpIdCpy = binaryEmpId;
+	string block;
 
 	if(flipBitsBool == true) {
+		cout << "bits have been flipped" << endl;
 		binaryEmpIdCpy = bitFlip(leastSigEmpId);
 	}
 
+	cout << "least sig emp id: " << leastSigEmpId << endl;
 	for(int j = 0; j < bucketArray.size(); j++) {
 		string binaryBucketId = stringToBinary(to_string(bucketArray[j].id));
 		string leastSigBucketBits = leastSigBits(i, binaryBucketId);
-		if(leastSigBucketBits == binaryEmpIdCpy) {
+
+		//if we flip the bits use the new flipped bit value
+		//otherwise use the original value
+		if((leastSigBucketBits == binaryEmpIdCpy && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
 			cout << "BUCKET ID TO WRITE TO: " << bucketArray[j].id << endl;
+			ifstream file;
+			file.open("EmployeeIndex.txt");
+
+			//get the line of the file and add the employee to it
+			getline(file, block, '#');
+			cout << "BLOCK: " << block << endl;
+			block.append(emp.id);
+			// fseek(bucketArray[j].pFile, 0, SEEK_SET);
+			fputs(block.c_str(), bucketArray[j].pFile);
+//THIS IS WHERE I LEFT OFF
+			//will need to check for byte size too
+			break;
 		}
 	}
 }
+
+
+//find which bucket to insert to
+//read in block to memory
+//add the id and check for overflow
 
 
 
