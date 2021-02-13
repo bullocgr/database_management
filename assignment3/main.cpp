@@ -12,6 +12,8 @@
 
 using namespace std;
 
+FILE* filePointer;
+
 struct Emp {
 	string id; //8 bytes
 	string name; // <= 200 bytes
@@ -21,7 +23,7 @@ struct Emp {
 
 struct Bucket {
 	int id; //same as line of file
-	FILE* pFile; //pointer to block in file
+	int pFile; //pointer to block in file
 	int bytes; //initialize to 4096 bytes
 };
 
@@ -55,36 +57,42 @@ int main(){
 
 	int i = 1;
 	int n = 1;
+	filePointer = fopen("EmployeeIndex.txt", "wb");
 	vector<Emp> data = readFromFile("Employees.csv");
-	string binaryId = stringToBinary(data[0].id);
-	string LSB = leastSigBits(i, binaryId);
 
 	vector<Bucket> bucketArray;
 	Bucket bucket;
-	bucket.id = 0;
-	bucket.bytes = 0;
-	bucket.pFile = fopen("EmployeeIndex.txt", "wb");
+	
+	for(int i = 0; i < 3; i++) {
+		bucket.id = i;
+		bucket.bytes = 0;
+		bucket.pFile = fseek(filePointer, 4096*i, SEEK_SET);
+		bucketArray.push_back(bucket);
 
-	bucketArray.push_back(bucket);
+		string binaryId = stringToBinary(data[i].id);
+		string LSB = leastSigBits(i, binaryId);
 
-	//check to see if bucket is full before inputting next emp
-	string bitFlipString;
-	//might need to be more iterable
-	if(to_string(bucketArray[0].id) != LSB) {
-		// cout << "NEED TO BIT FLIP" << endl;
-		bitFlipString = bitFlip(LSB);
+		//check to see if bucket is full before inputting next emp
+		string bitFlipString;
+		//might need to be more iterable
+		if(to_string(bucketArray[i].id) != LSB) {
+			// cout << "NEED TO BIT FLIP" << endl;
+			bitFlipString = bitFlip(LSB);
+		}
+
+		if(to_string(bucketArray[i].id) == bitFlipString) {
+			fwrite(data[i].id.c_str(), sizeof(char), sizeof(data[i].id), filePointer);
+		}
+
+
+		if(bucket.bytes + sizeof(data[i]) > 4096) {
+			//overflow
+		} else {
+			bucket.bytes += sizeof(data[i]);
+		}
 	}
 
-	if(to_string(bucketArray[0].id) == bitFlipString) {
-		fwrite(data[0].id.c_str(), sizeof(char), sizeof(data[0].id), bucketArray[0].pFile);
-	}
-
-
-    if(bucket.bytes + sizeof(data[0]) > 4096) {
-    	//overflow
-    } else {
-    	bucket.bytes += sizeof(data[0]);
-    }
+	
 	return 0;
 }
 
@@ -122,8 +130,6 @@ string bitFlip(string leastSigBits) {
 	flippedBits = leastSigBits;
 	flippedBits[found] = '0';
 	
-	// cout << "leastSigBits: " << leastSigBits << endl;
-	// cout << "flippedBits: " << flippedBits;
 	return flippedBits;
 }
 
