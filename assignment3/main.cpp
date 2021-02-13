@@ -75,8 +75,6 @@ int main(){
 	bool flipBitsBool = checkToFlipBits(employees[index], bucketArray, i);
 	storeRecord(employees[index], bucketArray, flipBitsBool, i);
 
-
-
 	return 0;
 }
 
@@ -217,8 +215,6 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 		}
 	}
 }
-
-
 
 
 
