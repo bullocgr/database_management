@@ -164,6 +164,7 @@ string leastSigBits(int i, string binary) {
  * as well as a '#' for deliminating
  */
 void allocateBucket(Bucket bucket) {
+	
 	for(int i = 0; i < 4096; i++) {
 		fputs(" ", bucket.pFile);
 	}
@@ -215,6 +216,7 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 		cout << "bits have been flipped" << endl;
 		binaryEmpIdCpy = bitFlip(leastSigEmpId);
 	}
+	ofstream outfile ("test.txt");
 
 	cout << "least sig emp id: " << leastSigEmpId << endl;
 	for(int j = 0; j < bucketArray.size(); j++) {
@@ -225,20 +227,67 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 		//otherwise use the original value
 		if((leastSigBucketBits == binaryEmpIdCpy && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
 			cout << "BUCKET ID TO WRITE TO: " << bucketArray[j].id << endl;
-			ifstream file;
-			file.open("EmployeeIndex.txt");
+			ifstream fileIn;
+			fileIn.open("EmployeeIndex.txt");
 
 			//get the line of the file and add the employee to it
-			getline(file, block, '#');
-			cout << "BLOCK: " << block << endl;
-			block.append(emp.id);
+			getline(fileIn, block, '#');
+			cout << "current BLOCK: " << block << endl;
+
+			string employeeRecord;
+
+			employeeRecord.append(emp.id);
+			employeeRecord.append(emp.name);
+			employeeRecord.append(emp.bio);
+			employeeRecord.append(emp.manager);
+			// employeeRecord.append("#");
+			// block 
+
+			cout << "employee record: " << employeeRecord << endl;
+
+			block.erase(0, employeeRecord.size());
+			block.append(employeeRecord);
+			
+			cout << "BLOCK size**: " << block.size() << endl;
+
+			// ofstream outfile ("test.txt");
+			ifstream fileInCopy;
+
+
+			// move file pointer fp, bucketArray[j].pFile
+			// getline will get the line the fp is at
+
+			for (int k = 0; k < bucketArray.size(); k++) {
+				string line;
+				if (k == bucketArray[j].id) {
+					// this is the line we have edited above
+					outfile << block << std::endl;
+				} else {
+					getline(fileInCopy, line, '#');
+					outfile << line << std::endl;
+				}
+
+				// fileInCopy.seekg(k*4096, ios::beg);
+			}
+			
+			outfile.close();
 			// fseek(bucketArray[j].pFile, 0, SEEK_SET);
-			fputs(block.c_str(), bucketArray[j].pFile);
+			// fputs(block.c_str(), bucketArray[j].pFile);
 //THIS IS WHERE I LEFT OFF
 			//will need to check for byte size too
 			break;
 		}
 	}
+	// go from test.txt to employeeindex.txt, update it
+	ifstream  src("test.txt", std::ios::binary);
+    ofstream  dst("EmployeeIndex.txt",   std::ios::binary);
+
+    dst << src.rdbuf();
+
+	src.close();
+	dst.close();
+
+
 }
 
 
