@@ -73,7 +73,7 @@ int main(){
 	vector<Emp> employees = readFromFile("Employees.csv");
 
 
-	for(index = 0; index < 5; index++) {
+	for(index = 0; index < 10; index++) {
 		cout << "========== " << index << " ==========" << endl;
 		cout << "EMPLOYEES: " << employees[index].id << endl;
 
@@ -97,12 +97,13 @@ vector<Emp> readFromFile(string fileName) {
 	vector<Emp> data;
 
 	ifstream file(fileName.c_str());
-
+	string manager_newline;
 	while(getline(file, emp.id, ',')) {
 		getline(file, emp.name, ',');
 		getline(file, emp.bio, ',');
-		getline(file, emp.manager, '\n');
+		getline(file, manager_newline);
 
+		emp.manager = manager_newline.erase(manager_newline.length() - 1);
 
 		data.push_back(emp);
 	}
@@ -184,13 +185,17 @@ bool checkToFlipBits(Emp emp, vector<Bucket> bucketArray, int i) {
 	string binaryEmpId = stringToBinary(emp.id);
 	string leastSigEmpBits = leastSigBits(i, binaryEmpId);
 
+	unsigned long long int leastSigEmpBitsDec = stoull(leastSigEmpBits, nullptr, 2);
+
 	for(int j = 0; j < bucketArray.size(); j++) {
 		string binaryBucketId = stringToBinary(to_string(bucketArray[j].id));
 		string leastSigBucketBits = leastSigBits(i, binaryBucketId);
 
-		if(leastSigBucketBits == leastSigEmpBits) {
+		unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+
+		if(leastSigBucketBitsDec == leastSigEmpBitsDec) {
 			// cout <<"NO BITS FLIPPED" << endl;
-			cout << "LEAST SIG EMP BITS: " << leastSigEmpBits << endl;
+			cout << "LEAST SIG EMP BITS: " << leastSigEmpBitsDec << endl;
 			return false;
 		}
 
@@ -213,10 +218,16 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 	string binaryEmpIdCpy = binaryEmpId;
 	string block;
 
+	unsigned long long int leastSigEmpIdDec = stoull(leastSigEmpId, nullptr, 2);
+	unsigned long long int binaryEmpIdDec = stoull(binaryEmpId, nullptr, 2);
+
+
 	if(flipBitsBool == true) {
 		cout << "bits have been flipped" << endl;
 		binaryEmpIdCpy = bitFlip(leastSigEmpId);
 	}
+
+	unsigned long long int binaryEmpIdCpyDec = stoull(binaryEmpIdCpy, nullptr, 2);
 	ofstream outfile ("test.txt");
 
 	cout << "least sig emp id: " << leastSigEmpId << endl;
@@ -224,9 +235,12 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 		string binaryBucketId = stringToBinary(to_string(bucketArray[j].id));
 		string leastSigBucketBits = leastSigBits(i, binaryBucketId);
 
+		unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+
 		//if we flip the bits use the new flipped bit value
 		//otherwise use the original value
-		if((leastSigBucketBits == binaryEmpIdCpy && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
+
+		if((leastSigBucketBitsDec == binaryEmpIdCpyDec && flipBitsBool == true) || (leastSigBucketBitsDec == leastSigEmpIdDec && flipBitsBool == false)) {
 			cout << "BUCKET ID TO WRITE TO: " << bucketArray[j].id << endl;
 			ifstream fileIn;
 			fileIn.open("EmployeeIndex.txt");
@@ -239,25 +253,45 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 			string employeeRecord;
 
 			employeeRecord.append(emp.id + " ");
-			// employeeRecord.append(emp.name);
-			// employeeRecord.append(emp.bio);
-			// employeeRecord.append(emp.manager);
+			employeeRecord.append(emp.name);
+			employeeRecord.append(emp.bio);
+			employeeRecord.append(emp.manager);
 			// block 
 			//fseek(bucketArray[j].pFile, 4096, SEEK_CUR);
 
 			// fseek(bucketArray[j].pFile, 4096, SEEK_CUR);
 
 			// fputs("#", bucketArray[j].pFile);
-			cout << "current BLOCK: " << block << endl;
+			// cout << "current BLOCK: " << block << endl;
 			//cout << "employee record: " << employeeRecord << endl;
 
-			//employeeRecord.append("#");
-			block.erase(0, employeeRecord.size());
-			block.append(employeeRecord);
-			block.append("#");
+
+			// erase part of a copy and examine to see if the current block copy plus another 
+			// employee record would put it over the edge, 4097 (w/ delimeter). If not, then actually
+			// erase the block and add another employee. If it does, output block with new line
+			// and another employee record on that new line/bucket.
+			string blockCpy = block;
+
+			blockCpy.erase(0, employeeRecord.size());
+
+			// check if we need to go to next line for new block
+			if (blockCpy.size() + employeeRecord.size() > 4096) {
+				cout << "HEY********" << endl;
+				outfile << block << endl;
+				outfile << employeeRecord;
+				outfile << "#";
+			} else { // erase
+				cout << "blockcpysize$$$$: " << blockCpy.size() + employeeRecord.size() << endl;
+				block.erase(0, employeeRecord.size());
+				block.append(employeeRecord);
+				block.append("#");
+				outfile << block;
+			}
+
+			
 
 
-			// cout << "current BLOCK: " << block << endl;
+			cout << "current BLOCK: " << block << endl;
 			
 			cout << "BLOCK size**: " << block.size() << endl;
 
@@ -268,7 +302,7 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 		
 			// pFile = fopen ("test.txt" , "rw");
 			// fputs(block.c_str(), pFile);
-			outfile << block;
+			// outfile << block << endl;
 
 			// copy all buckets and edited bucket to new temp file
 			// for (int k = 0; k < bucketArray.size(); k++) {
