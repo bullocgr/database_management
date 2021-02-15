@@ -103,6 +103,7 @@ vector<Emp> readFromFile(string fileName) {
 		getline(file, emp.bio, ',');
 		getline(file, emp.manager, '\n');
 
+
 		data.push_back(emp);
 	}
 
@@ -230,49 +231,64 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 			ifstream fileIn;
 			fileIn.open("EmployeeIndex.txt");
 
+			// fseek(bucketArray[j].pFile, 0, SEEK_CUR);
 			//get the line of the file and add the employee to it
 			getline(fileIn, block, '#');
-			cout << "current BLOCK: " << block << endl;
+			cout << "Just got the block: " << block;
 
 			string employeeRecord;
 
-			employeeRecord.append(emp.id);
-			employeeRecord.append(emp.name);
-			employeeRecord.append(emp.bio);
-			employeeRecord.append(emp.manager);
-			// employeeRecord.append("#");
+			employeeRecord.append(emp.id + " ");
+			// employeeRecord.append(emp.name);
+			// employeeRecord.append(emp.bio);
+			// employeeRecord.append(emp.manager);
 			// block 
+			//fseek(bucketArray[j].pFile, 4096, SEEK_CUR);
 
-			cout << "employee record: " << employeeRecord << endl;
+			// fseek(bucketArray[j].pFile, 4096, SEEK_CUR);
 
+			// fputs("#", bucketArray[j].pFile);
+			cout << "current BLOCK: " << block << endl;
+			//cout << "employee record: " << employeeRecord << endl;
+
+			//employeeRecord.append("#");
 			block.erase(0, employeeRecord.size());
 			block.append(employeeRecord);
+			block.append("#");
+
+
+			// cout << "current BLOCK: " << block << endl;
 			
 			cout << "BLOCK size**: " << block.size() << endl;
 
-			// ofstream outfile ("test.txt");
 			ifstream fileInCopy;
-
 
 			// move file pointer fp, bucketArray[j].pFile
 			// getline will get the line the fp is at
+		
+			// pFile = fopen ("test.txt" , "rw");
+			// fputs(block.c_str(), pFile);
+			outfile << block;
 
-			for (int k = 0; k < bucketArray.size(); k++) {
-				string line;
-				if (k == bucketArray[j].id) {
-					// this is the line we have edited above
-					outfile << block << std::endl;
-				} else {
-					getline(fileInCopy, line, '#');
-					outfile << line << std::endl;
-				}
+			// copy all buckets and edited bucket to new temp file
+			// for (int k = 0; k < bucketArray.size(); k++) {
+			// 	string line;
+			// 	if (k == bucketArray[j].id) {
+			// 		// this is the line we have edited above
+			// 		// fwrite(block.c_str(), sizeof(char), sizeof(block.c_str()), bucketArray[j].pFile);
+			// 		outfile << block + "\n";
+			// 		cout << "$$$$$$bucket array address: " << bucketArray[j].pFile;
+			// 	} else {
+			// 		cout << "if";
+			// 		getline(fileInCopy, line, '#');
+			// 		outfile << line;
+			// 	}
 
-				// fileInCopy.seekg(k*4096, ios::beg);
-			}
+			// // 	// fileInCopy.seekg(k*4096, ios::beg);
+			// }
 			
 			outfile.close();
-			// fseek(bucketArray[j].pFile, 0, SEEK_SET);
-			// fputs(block.c_str(), bucketArray[j].pFile);
+			fseek(bucketArray[j].pFile, 0, SEEK_END);
 //THIS IS WHERE I LEFT OFF
 			//will need to check for byte size too
 			break;

@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "Solution": "java",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "*.tcc": "cpp"
     }
 }
