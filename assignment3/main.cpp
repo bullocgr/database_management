@@ -13,6 +13,8 @@
 using namespace std;
 
 FILE* filePointer;
+//outfile.open("test.txt", ios::out);
+
 
 struct Emp {
 	string id; //8 bytes
@@ -31,9 +33,9 @@ string stringToBinary(string );
 string leastSigBits(int , string );
 // string binaryToDec(string );
 string bitFlip(string );
-void allocateBucket(Bucket );
+void allocateBlock(Bucket, ofstream&);
 bool checkToFlipBits(Emp , vector<Bucket> , int );
-void storeRecord(Emp , vector<Bucket> , bool , int );
+void storeRecord(Emp , vector<Bucket> , bool , int, ofstream&);
 
 int main(){
 
@@ -58,12 +60,13 @@ int main(){
 	int i = 1;
 	int index = 0;
 	FILE* pFile = fopen("EmployeeIndex.txt", "wb");
+	ofstream outfile ("test.txt");
 	vector<Bucket> bucketArray;
 	Bucket bucket;
 	bucket.id = 0;
 	bucket.pFile = pFile;
 	bucketArray.push_back(bucket);
-	allocateBucket(bucketArray[index]);
+	allocateBlock(bucketArray[index], &outfile);
 
 
 	//check the size of bucket to see if we can write emp to that bucket
@@ -78,7 +81,7 @@ int main(){
 		cout << "EMPLOYEES: " << employees[index].id << endl;
 
 		bool flipBitsBool = checkToFlipBits(employees[index], bucketArray, i);
-		storeRecord(employees[index], bucketArray, flipBitsBool, i);
+		storeRecord(employees[index], bucketArray, flipBitsBool, i, &outfile);
 	}
 
 
@@ -165,10 +168,11 @@ string leastSigBits(int i, string binary) {
  * and then 10 more bytes for overflow
  * as well as a '#' for deliminating
  */
-void allocateBucket(Bucket bucket) {
-	
+void allocateBlock(Bucket bucket, ofstream& outfile) {
+	cout << "****************** " << endl;
 	for(int i = 0; i < 4096; i++) {
-		fputs(" ", bucket.pFile);
+		//fputs(" ", bucket.pFile);
+		outfile << " ";
 	}
 	fseek(bucket.pFile, 4096, SEEK_CUR);
 
@@ -212,7 +216,7 @@ bool checkToFlipBits(Emp emp, vector<Bucket> bucketArray, int i) {
  * and use that value to check bucket id for indexing
  * otherwise skip bit flipping and just check for the bucket id
  */
-void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) {
+void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i, ofstream& outfile) {
 	string binaryEmpId = stringToBinary(emp.id);
 	string leastSigEmpId = leastSigBits(i, binaryEmpId);
 	string binaryEmpIdCpy = binaryEmpId;
@@ -228,7 +232,7 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 	}
 
 	unsigned long long int binaryEmpIdCpyDec = stoull(binaryEmpIdCpy, nullptr, 2);
-	ofstream outfile ("test.txt");
+	
 
 	cout << "least sig emp id: " << leastSigEmpId << endl;
 	for(int j = 0; j < bucketArray.size(); j++) {
@@ -239,6 +243,8 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 
 		//if we flip the bits use the new flipped bit value
 		//otherwise use the original value
+
+		// where we open outfile before!!!!!!!!!
 
 		if((leastSigBucketBitsDec == binaryEmpIdCpyDec && flipBitsBool == true) || (leastSigBucketBitsDec == leastSigEmpIdDec && flipBitsBool == false)) {
 			cout << "BUCKET ID TO WRITE TO: " << bucketArray[j].id << endl;
@@ -270,18 +276,33 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 			// employee record would put it over the edge, 4097 (w/ delimeter). If not, then actually
 			// erase the block and add another employee. If it does, output block with new line
 			// and another employee record on that new line/bucket.
-			string blockCpy = block;
+			//Check how many spaces are left
+			int remainingSpaces = 0;
 
-			blockCpy.erase(0, employeeRecord.size());
+            for(int space_counter = 0; block[space_counter] != '1' && space_counter < block.size(); space_counter++){
+                remainingSpaces++;
+            }
+            cout << "Spaces left in block: " << remainingSpaces << endl;
+
+
+			// string blockCpy = block;
+
+			// blockCpy.erase(0, employeeRecord.size());
+
 
 			// check if we need to go to next line for new block
-			if (blockCpy.size() + employeeRecord.size() > 4096) {
-				cout << "HEY********" << endl;
-				outfile << block << endl;
-				outfile << employeeRecord;
-				outfile << "#";
+			if (remainingSpaces < employeeRecord.size()) {
+				// we need to allocate another bucket here
+				Bucket bucket;
+				fseek(bucketArray[j].pFile, bucketArray[j].id, SEEK_SET);
+				bucket.pFile = bucketArray[j].pFile;
+				bucketArray.push_back(bucket);
+				bucket.id = bucketArray.size();
+				allocateBlock(bucket);
+				outfile << block << endl;     // output current bucket
+				outfile << "         " + employeeRecord;	  // next employee record needs to go in newly alloced bucket
+				outfile << "#";	 			  // delimeter
 			} else { // erase
-				cout << "blockcpysize$$$$: " << blockCpy.size() + employeeRecord.size() << endl;
 				block.erase(0, employeeRecord.size());
 				block.append(employeeRecord);
 				block.append("#");
@@ -322,7 +343,7 @@ void storeRecord(Emp emp, vector<Bucket> bucketArray, bool flipBitsBool, int i) 
 			// }
 			
 			outfile.close();
-			fseek(bucketArray[j].pFile, 0, SEEK_END);
+			// fseek(bucketArray[j].pFile, 0, SEEK_END);
 //THIS IS WHERE I LEFT OFF
 			//will need to check for byte size too
 			break;

@@ -2,6 +2,7 @@
     "files.associations": {
         "Solution": "java",
         "iostream": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "iosfwd": "cpp"
     }
 }
