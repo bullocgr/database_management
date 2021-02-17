@@ -183,11 +183,15 @@ bool checkToFlipBits(Emp emp, vector<Bucket> bucketArray, int i) {
 	string binaryEmpId = stringToBinary(emp.id);
 	string leastSigEmpBits = leastSigBits(i, binaryEmpId);
 
+	unsigned long long int leastSigEmpBitsDec = stoull(leastSigEmpBits, nullptr, 2);
+
 	for(int j = 0; j < bucketArray.size(); j++) {
 		string binaryBucketId = stringToBinary(to_string(bucketArray[j].id));
 		string leastSigBucketBits = leastSigBits(i, binaryBucketId);
 
-		if(leastSigBucketBits == leastSigEmpBits) {
+		unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+
+		if(leastSigBucketBitsDec == leastSigEmpBitsDec) {
 			// cout <<"NO BITS FLIPPED" << endl;
 			cout << "LEAST SIG EMP BITS: " << leastSigEmpBits << endl;
 			return false;
@@ -212,10 +216,15 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 	string binaryEmpIdCpy = binaryEmpId;
 	// string block;
 
+	unsigned long long int leastSigEmpIdDec = stoull(leastSigEmpId, nullptr, 2);
+	unsigned long long int binaryEmpIdDec = stoull(binaryEmpId, nullptr, 2);
+
 	if(flipBitsBool == true) {
 		cout << "bits have been flipped" << endl;
 		binaryEmpIdCpy = bitFlip(leastSigEmpId);
 	}
+
+	unsigned long long int binaryEmpIdCpyDec = stoull(binaryEmpIdCpy, nullptr, 2);
 
 	cout << "least sig emp id: " << leastSigEmpId << endl;
 	cout << "BUCKET SIZE: " << bucketArray.size() << endl;
@@ -225,9 +234,11 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 		string binaryBucketId = stringToBinary(to_string(bucketArray[j].id));
 		string leastSigBucketBits = leastSigBits(i, binaryBucketId);
 
+		unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+
 		//if we flip the bits use the new flipped bit value
 		//otherwise use the original value
-		if((leastSigBucketBits == binaryEmpIdCpy && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
+		if((leastSigBucketBitsDec == binaryEmpIdCpyDec && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
 			cout << "NUM EMPS: " << bucketArray[j].numEmps << endl;
 			if(bucketArray[j].numEmps <= 5) {
 				writeToBlock(emp, bucketArray, j);
