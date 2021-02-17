@@ -167,6 +167,7 @@ string leastSigBits(int i, string binary) {
  */
 void allocateBlock(Bucket bucket) {
 	cout << "EMPLOYEE INDEX ::::::::: " << bucket.pFile << endl;
+	fseek(bucket.pFile, 4097*bucket.id, SEEK_SET);
 	for(int i = 0; i < 4096; i++) {
 		fputs("#", bucket.pFile);
 	}
@@ -183,11 +184,15 @@ bool checkToFlipBits(Emp emp, vector<Bucket> bucketArray, int i) {
 	string binaryEmpId = stringToBinary(emp.id);
 	string leastSigEmpBits = leastSigBits(i, binaryEmpId);
 
+	unsigned long long int leastSigEmpBitsDec = stoull(leastSigEmpBits, nullptr, 2);
+
 	for(int j = 0; j < bucketArray.size(); j++) {
 		string binaryBucketId = stringToBinary(to_string(bucketArray[j].id));
 		string leastSigBucketBits = leastSigBits(i, binaryBucketId);
 
-		if(leastSigBucketBits == leastSigEmpBits) {
+		unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+
+		if(leastSigBucketBitsDec == leastSigEmpBitsDec) {
 			// cout <<"NO BITS FLIPPED" << endl;
 			cout << "LEAST SIG EMP BITS: " << leastSigEmpBits << endl;
 			return false;
@@ -212,28 +217,37 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 	string binaryEmpIdCpy = binaryEmpId;
 	// string block;
 
+	unsigned long long int leastSigEmpIdDec = stoull(leastSigEmpId, nullptr, 2);
+	unsigned long long int binaryEmpIdDec = stoull(binaryEmpId, nullptr, 2);
+
 	if(flipBitsBool == true) {
 		cout << "bits have been flipped" << endl;
 		binaryEmpIdCpy = bitFlip(leastSigEmpId);
 	}
 
+	unsigned long long int binaryEmpIdCpyDec = stoull(binaryEmpIdCpy, nullptr, 2);
+
 	cout << "least sig emp id: " << leastSigEmpId << endl;
 	cout << "BUCKET SIZE: " << bucketArray.size() << endl;
 
-
+	// cout
 	for(int j = 0; j < bucketArray.size(); j++) {
 		string binaryBucketId = stringToBinary(to_string(bucketArray[j].id));
 		string leastSigBucketBits = leastSigBits(i, binaryBucketId);
 
+		unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+
 		//if we flip the bits use the new flipped bit value
 		//otherwise use the original value
-		if((leastSigBucketBits == binaryEmpIdCpy && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
+		if((leastSigBucketBitsDec == binaryEmpIdCpyDec && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
 			cout << "NUM EMPS: " << bucketArray[j].numEmps << endl;
-			if(bucketArray[j].numEmps <= 5) {
+			if(bucketArray[j].numEmps < 5) {
 				writeToBlock(emp, bucketArray, j);
 			} else {
 				cout << "NEW BUCKET" << endl;
+				bucketArray[j].numEmps = 0;
 				newBucket(bucketArray, bucketArray[j].pFile);
+				writeToBlock(emp, bucketArray, j + 1);
 				//then write to new bucket
 			}
 		} else {
@@ -246,11 +260,11 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 void newBucket(vector<Bucket> &bucketArray, FILE* fp) {
 		//allocate new bucket
 		Bucket bucket;
-		bucket.id = bucketArray.size()-1;
+		bucket.id = bucketArray.size();
 		bucket.pFile = fp;
 		bucket.numEmps = 0;
 		bucketArray.push_back(bucket);
-		allocateBlock(bucketArray[bucketArray.size()-1]);
+		allocateBlock(bucketArray[bucketArray.size() - 1]);
 		// index++;
 		// allocateBlock(bucketArray[index]);
 		// writeToBlock(emp, bucketArray, index);
@@ -294,7 +308,12 @@ void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
 	// cout << (emp.manager).length() << endl;
 
 	cout << employeeRecord << endl;
-
+	// cout << "------" << endl;
+	// cout << "------bucket array size(), " << bucketArray.size() << endl;
+	// cout << "------index, " << index << endl;
+	// cout << "------numEmps, " << bucketArray[index].numEmps << endl;
+	// cout << "------employeeRecord, " << employeeRecord.size() << endl;
+	// cout << "------" << endl;
 	block.replace(bucketArray[index].numEmps * 716, 716, employeeRecord);
 
 	fseek(bucketArray[index].pFile, 4097*bucketArray[index].id, SEEK_SET);
@@ -312,5 +331,3 @@ void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
 //read in block to memory
 //add the id and check for overflow
 //overwrite 
-
-
