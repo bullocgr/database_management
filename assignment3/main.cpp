@@ -244,7 +244,9 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 				writeToBlock(emp, bucketArray, j);
 			} else {
 				cout << "NEW BUCKET" << endl;
+				bucketArray[j].numEmps = 0;
 				newBucket(bucketArray, bucketArray[j].pFile);
+				writeToBlock(emp, bucketArray, j + 1);
 				//then write to new bucket
 			}
 		} else {
@@ -257,11 +259,11 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 void newBucket(vector<Bucket> &bucketArray, FILE* fp) {
 		//allocate new bucket
 		Bucket bucket;
-		bucket.id = bucketArray.size()-1;
+		bucket.id = bucketArray.size();
 		bucket.pFile = fp;
 		bucket.numEmps = 0;
 		bucketArray.push_back(bucket);
-		allocateBlock(bucketArray[bucketArray.size()-1]);
+		allocateBlock(bucketArray[bucketArray.size() - 1]);
 		// index++;
 		// allocateBlock(bucketArray[index]);
 		// writeToBlock(emp, bucketArray, index);
@@ -305,7 +307,12 @@ void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
 	// cout << (emp.manager).length() << endl;
 
 	cout << employeeRecord << endl;
-
+	// cout << "------" << endl;
+	// cout << "------bucket array size(), " << bucketArray.size() << endl;
+	// cout << "------index, " << index << endl;
+	// cout << "------numEmps, " << bucketArray[index].numEmps << endl;
+	// cout << "------employeeRecord, " << employeeRecord.size() << endl;
+	// cout << "------" << endl;
 	block.replace(bucketArray[index].numEmps * 716, 716, employeeRecord);
 
 	fseek(bucketArray[index].pFile, 4097*bucketArray[index].id, SEEK_SET);
