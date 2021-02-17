@@ -33,6 +33,8 @@ string bitFlip(string );
 void allocateBlock(Bucket );
 bool checkToFlipBits(Emp , vector<Bucket> , int );
 void storeRecord(Emp , vector<Bucket>& , bool , int );
+void newBucket(vector<Bucket>& , FILE* );
+void writeToBlock(Emp , vector<Bucket>& , int );
 
 int main(){
 
@@ -70,7 +72,7 @@ int main(){
 
 
 
-	for(index = 0; index < 5; index++) {
+	for(index = 0; index < 10; index++) {
 		cout << "========== " << index << " ==========" << endl;
 		cout << "EMPLOYEES: " << employees[index].id << endl;
 
@@ -226,54 +228,83 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 		//if we flip the bits use the new flipped bit value
 		//otherwise use the original value
 		if((leastSigBucketBits == binaryEmpIdCpy && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
-			cout << "BUCKET ID TO WRITE TO: " << bucketArray[j].id << endl;
-			cout << "FILE POINTER: " << bucketArray[j].pFile << endl;
-
-			//4096 bytes + newline 
-			//when file is open it is set to eof
-			//this sets fp to 4097*bucketArray[j].id bytes from beginning
-			fseek(bucketArray[j].pFile, 4097*bucketArray[j].id, SEEK_SET);
-			string block(4096, '\n');
-
-			//set fp to 4096 past 4097*bucketArray[j].id
-			fread(&block[0], sizeof(char), 4096, bucketArray[j].pFile);
-			cout << "===========block BEFORE============\n" << block << endl;
-
-			//need to overwrite string
-			//string.replace
-			string employeeRecord;
-			employeeRecord.append(emp.id);
-			employeeRecord.append(emp.name);
-			employeeRecord.append(emp.bio);
-			employeeRecord.append(emp.manager);
-			cout << "LENGHT: " << employeeRecord.length() << endl;
-			while(employeeRecord.length() != 716) {
-				employeeRecord.append(" ");
-			}
-
-			cout << "================EMP RECORD=============\n";
-			cout << (emp.id).length() << endl;
-			cout << (emp.name).length() << endl;
-			cout << (emp.bio).length() << endl;
-			cout << (emp.manager).length() << endl;
-
-			cout << employeeRecord << endl;
-
-			block.replace(bucketArray[j].numEmps * 716, 716, employeeRecord);
-
-			fseek(bucketArray[j].pFile, 4097*bucketArray[j].id, SEEK_SET);
-			fwrite(block.c_str(), sizeof(char), 4096, bucketArray[j].pFile);
-			fflush(bucketArray[j].pFile);
-
-			bucketArray[j].numEmps++;
 			cout << "NUM EMPS: " << bucketArray[j].numEmps << endl;
-			cout << "===========block============\n" << block << endl;
-
-
-			break;
+			if(bucketArray[j].numEmps <= 5) {
+				writeToBlock(emp, bucketArray, j);
+			} else {
+				cout << "NEW BUCKET" << endl;
+				newBucket(bucketArray, bucketArray[j].pFile);
+				//then write to new bucket
+			}
+		} else {
+			cout << "Bucket not found" << endl;
 		}
 	}
 
+}
+
+void newBucket(vector<Bucket> &bucketArray, FILE* fp) {
+		//allocate new bucket
+		Bucket bucket;
+		bucket.id = bucketArray.size()-1;
+		bucket.pFile = fp;
+		bucket.numEmps = 0;
+		bucketArray.push_back(bucket);
+		allocateBlock(bucketArray[bucketArray.size()-1]);
+		// index++;
+		// allocateBlock(bucketArray[index]);
+		// writeToBlock(emp, bucketArray, index);
+		//increment index
+		//write to that
+
+}
+
+void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
+	cout << "BUCKET ID TO WRITE TO: " << bucketArray[index].id << endl;
+	cout << "FILE POINTER: " << bucketArray[index].pFile << endl;
+
+	//4096 bytes + newline 
+	//when file is open it is set to eof
+	//this sets fp to 4097*bucketArray[index].id bytes from beginning
+	fseek(bucketArray[index].pFile, 4097*bucketArray[index].id, SEEK_SET);
+	string block(4096, '\n');
+
+	//set fp to 4096 past 4097*bucketArray[index].id
+	fread(&block[0], sizeof(char), 4096, bucketArray[index].pFile);
+	// cout << "===========block BEFORE============\n" << block << endl;
+
+	//need to overwrite string
+	//string.replace
+	string employeeRecord;
+	employeeRecord.append(emp.id);
+	employeeRecord.append(emp.name);
+	employeeRecord.append(emp.bio);
+	employeeRecord.append(emp.manager);
+	employeeRecord.append(", ");
+	cout << "LENGHT: " << employeeRecord.length() << endl;
+	while(employeeRecord.length() != 716) {
+		employeeRecord.append(" ");
+	}
+	
+
+	// cout << "================EMP RECORD=============\n";
+	// cout << (emp.id).length() << endl;
+	// cout << (emp.name).length() << endl;
+	// cout << (emp.bio).length() << endl;
+	// cout << (emp.manager).length() << endl;
+
+	cout << employeeRecord << endl;
+
+	block.replace(bucketArray[index].numEmps * 716, 716, employeeRecord);
+
+	fseek(bucketArray[index].pFile, 4097*bucketArray[index].id, SEEK_SET);
+	fwrite(block.c_str(), sizeof(char), 4096, bucketArray[index].pFile);
+	fflush(bucketArray[index].pFile);
+
+	bucketArray[index].numEmps++;
+	
+	// cout << "===========block============\n" << block << endl; 
+	
 }
 
 
@@ -283,4 +314,3 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 //overwrite 
 
 
-    
