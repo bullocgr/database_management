@@ -25,7 +25,7 @@ struct Bucket {
 	int numEmps;
 };
 
-vector<Emp> readFromFile(string );
+vector<Emp> readEmployees(string );
 string stringToBinary(string );
 string leastSigBits(int , string );
 // string binaryToDec(string );
@@ -33,10 +33,14 @@ string bitFlip(string );
 void allocateBlock(Bucket );
 bool checkToFlipBits(Emp , vector<Bucket> , int );
 void storeRecord(Emp , vector<Bucket>& , bool , int );
-void newBucket(vector<Bucket>& , FILE* );
+void newBucket(vector<Bucket>& , FILE* , int );
 void writeToBlock(Emp , vector<Bucket>& , int );
+void creation();
+int incrementIndex(vector<Bucket>& , int , int );
+void lookup(string );
 
-int main(){
+
+int main(int argc, char* argv[]){
 
 	//done:
 	// get the employee id
@@ -56,32 +60,22 @@ int main(){
 	// track bytes input after bucket is filled
 	// overflow shit good luck
 
-	int i = 1;
-	int index = 0;
-	FILE* pFile = fopen("EmployeeIndex.txt", "w+");
-	vector<Bucket> bucketArray;
-	Bucket bucket;
-	bucket.id = 0;
-	bucket.pFile = pFile;
-	bucket.numEmps = 0;
-	bucketArray.push_back(bucket);
-	allocateBlock(bucketArray[index]);
-
-	
-	vector<Emp> employees = readFromFile("Employees.csv");
-
-
-
-	for(index = 0; index < 10; index++) {
-		cout << "========== " << index << " ==========" << endl;
-		cout << "EMPLOYEES: " << employees[index].id << endl;
-
-		bool flipBitsBool = checkToFlipBits(employees[index], bucketArray, i);
-		storeRecord(employees[index], bucketArray, flipBitsBool, i);
-	}
+	switch (*argv[1]) {
+        case 'C':
+            creation();
+            break;
+        
+        case 'L':
+            lookup(argv[2]);
+            break;
+        
+        default:
+            cout << "Incorrect Parameters" << endl;
+            break;
+    }
 
 
-	fclose(pFile);
+
 	return 0;
 }
 
@@ -91,7 +85,7 @@ int main(){
  * and store the values of each line in Emp struct
  * then push those values to a vector
  */
-vector<Emp> readFromFile(string fileName) {
+vector<Emp> readEmployees(string fileName) {
 	struct Emp emp;
 	vector<Emp> data;
 
@@ -108,6 +102,7 @@ vector<Emp> readFromFile(string fileName) {
 		// data.push_back(emp);
 	}
 
+	file.close();
 	return data;
 }
 
@@ -166,12 +161,14 @@ string leastSigBits(int i, string binary) {
  * as well as a '#' for deliminating
  */
 void allocateBlock(Bucket bucket) {
+	fseek(bucket.pFile, 0, SEEK_END);
 	cout << "EMPLOYEE INDEX ::::::::: " << bucket.pFile << endl;
-	fseek(bucket.pFile, 4097*bucket.id, SEEK_SET);
+
 	for(int i = 0; i < 4096; i++) {
 		fputs("#", bucket.pFile);
 	}
 	fputs("\n", bucket.pFile);
+	fseek(bucket.pFile, 0, SEEK_SET);
 }
 
 
@@ -193,8 +190,6 @@ bool checkToFlipBits(Emp emp, vector<Bucket> bucketArray, int i) {
 		unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
 
 		if(leastSigBucketBitsDec == leastSigEmpBitsDec) {
-			// cout <<"NO BITS FLIPPED" << endl;
-			cout << "LEAST SIG EMP BITS: " << leastSigEmpBits << endl;
 			return false;
 		}
 
@@ -212,70 +207,68 @@ bool checkToFlipBits(Emp emp, vector<Bucket> bucketArray, int i) {
  * otherwise skip bit flipping and just check for the bucket id
  */
 void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i) {
-	string binaryEmpId = stringToBinary(emp.id);
-	string leastSigEmpId = leastSigBits(i, binaryEmpId);
-	string binaryEmpIdCpy = binaryEmpId;
+	// string binaryEmpId = stringToBinary(emp.id);
+	// string leastSigEmpId = leastSigBits(i, binaryEmpId);
+	// string binaryEmpIdCpy = binaryEmpId;
 	// string block;
 
-	unsigned long long int leastSigEmpIdDec = stoull(leastSigEmpId, nullptr, 2);
-	unsigned long long int binaryEmpIdDec = stoull(binaryEmpId, nullptr, 2);
+	// unsigned long long int leastSigEmpIdDec = stoull(leastSigEmpId, nullptr, 2);
+	// unsigned long long int binaryEmpIdDec = stoull(binaryEmpId, nullptr, 2);
 
-	if(flipBitsBool == true) {
-		cout << "bits have been flipped" << endl;
-		binaryEmpIdCpy = bitFlip(leastSigEmpId);
-	}
+	// if(flipBitsBool == true) {
+	// 	cout << "bits have been flipped" << endl;
+	// 	// binaryEmpIdCpy = bitFlip(leastSigEmpId);
+	// }
 
-	unsigned long long int binaryEmpIdCpyDec = stoull(binaryEmpIdCpy, nullptr, 2);
+	// unsigned long long int binaryEmpIdCpyDec = stoull(binaryEmpIdCpy, nullptr, 2);
 
-	cout << "least sig emp id: " << leastSigEmpId << endl;
-	cout << "BUCKET SIZE: " << bucketArray.size() << endl;
+	// cout << "least sig emp id: " << leastSigEmpId << endl;
+	// cout << "BUCKET SIZE: " << bucketArray.size() << endl;
 
 	// cout
-	for(int j = 0; j < bucketArray.size(); j++) {
-		string binaryBucketId = stringToBinary(to_string(bucketArray[j].id));
-		string leastSigBucketBits = leastSigBits(i, binaryBucketId);
+	// for(int j = 0; j < bucketArray.size(); j++) {
+		// string binaryBucketId = stringToBinary(to_string(bucketArray[j].id));
+		// string leastSigBucketBits = leastSigBits(i, binaryBucketId);
 
-		unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+		// unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
 
 		//if we flip the bits use the new flipped bit value
-		//otherwise use the original value
-		if((leastSigBucketBitsDec == binaryEmpIdCpyDec && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
-			cout << "NUM EMPS: " << bucketArray[j].numEmps << endl;
-			if(bucketArray[j].numEmps < 5) {
-				writeToBlock(emp, bucketArray, j);
-			} else {
-				cout << "NEW BUCKET" << endl;
-				bucketArray[j].numEmps = 0;
-				newBucket(bucketArray, bucketArray[j].pFile);
-				writeToBlock(emp, bucketArray, j + 1);
-				//then write to new bucket
-			}
-		} else {
-			cout << "Bucket not found" << endl;
-		}
-	}
+		// //otherwise use the original value
+		// // if((leastSigBucketBitsDec == binaryEmpIdCpyDec && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
+		// 	cout << "NUM EMPS: " << bucketArray[j].numEmps << endl;
+		// 	if(bucketArray[j].numEmps < 5) {
+		// 		writeToBlock(emp, bucketArray, j);
+		// 	} else {
+		// 		cout << "NEW BUCKET" << endl;
+		// 		bucketArray[j].numEmps = 0;
+		// 		newBucket(bucketArray, bucketArray[j].pFile);
+		// 		writeToBlock(emp, bucketArray, j + 1);
+		// 		//then write to new bucket
+		// 	}
+		// } else {
+		// 	cout << "Bucket not found" << endl;
+}
+
+
+void storeRecord(Emp emp, vector<Bucket> &bucketArray, int index) {
 
 }
 
-void newBucket(vector<Bucket> &bucketArray, FILE* fp) {
+
+void newBucket(vector<Bucket> &bucketArray, FILE* fp, int index) {
 		//allocate new bucket
 		Bucket bucket;
 		bucket.id = bucketArray.size();
 		bucket.pFile = fp;
 		bucket.numEmps = 0;
 		bucketArray.push_back(bucket);
-		allocateBlock(bucketArray[bucketArray.size() - 1]);
-		// index++;
-		// allocateBlock(bucketArray[index]);
-		// writeToBlock(emp, bucketArray, index);
-		//increment index
-		//write to that
+		allocateBlock(bucketArray[index]);
+
 
 }
 
 void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
 	cout << "BUCKET ID TO WRITE TO: " << bucketArray[index].id << endl;
-	cout << "FILE POINTER: " << bucketArray[index].pFile << endl;
 
 	//4096 bytes + newline 
 	//when file is open it is set to eof
@@ -285,7 +278,9 @@ void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
 
 	//set fp to 4096 past 4097*bucketArray[index].id
 	fread(&block[0], sizeof(char), 4096, bucketArray[index].pFile);
-	// cout << "===========block BEFORE============\n" << block << endl;
+	// if(index == 5) {
+	// 	cout << "===========block BEFORE============\n" << block << endl; 
+	// }
 
 	//need to overwrite string
 	//string.replace
@@ -295,26 +290,14 @@ void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
 	employeeRecord.append(emp.bio);
 	employeeRecord.append(emp.manager);
 	employeeRecord.append(", ");
-	cout << "LENGHT: " << employeeRecord.length() << endl;
 	while(employeeRecord.length() != 716) {
 		employeeRecord.append(" ");
 	}
 	
-
-	// cout << "================EMP RECORD=============\n";
-	// cout << (emp.id).length() << endl;
-	// cout << (emp.name).length() << endl;
-	// cout << (emp.bio).length() << endl;
-	// cout << (emp.manager).length() << endl;
-
 	cout << employeeRecord << endl;
-	// cout << "------" << endl;
-	// cout << "------bucket array size(), " << bucketArray.size() << endl;
-	// cout << "------index, " << index << endl;
-	// cout << "------numEmps, " << bucketArray[index].numEmps << endl;
-	// cout << "------employeeRecord, " << employeeRecord.size() << endl;
-	// cout << "------" << endl;
 	block.replace(bucketArray[index].numEmps * 716, 716, employeeRecord);
+
+	cout << "SIZE OF BLOCK: " << block.size() << endl;
 
 	fseek(bucketArray[index].pFile, 4097*bucketArray[index].id, SEEK_SET);
 	fwrite(block.c_str(), sizeof(char), 4096, bucketArray[index].pFile);
@@ -322,10 +305,68 @@ void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
 
 	bucketArray[index].numEmps++;
 	
-	// cout << "===========block============\n" << block << endl; 
+	
 	
 }
 
+int incrementIndex(vector<Bucket> &bucketArray, int index, int j) {
+	int id = bucketArray[j].id;
+	// if(id )
+}
+
+
+void creation() {
+	FILE* fp = fopen("EmployeeIndex.txt", "w+");
+	vector<Emp> employees = readEmployees("Employees.csv");
+
+	//create initial empty bucket
+	Bucket initialBucket;
+	initialBucket.pFile = fp;
+	initialBucket.id = 0;
+	initialBucket.numEmps = 0;
+
+	vector<Bucket> bucketArray;
+	bucketArray.push_back(initialBucket);
+	allocateBlock(bucketArray[0]);
+
+	bool writing = true;
+	// int index = 0;
+	int bucketArrayIndex = 0;
+
+	for(int i = 0; i < employees.size(); i++) {
+	//check to see if we are writing to the file
+		// while(writing) {
+			if(bucketArray[bucketArrayIndex].numEmps < 5) {
+				cout << "WILL WRITE TO BLOCK" << endl;
+				// newBucket(bucketArray, bucketArray[bucketArrayIndex].pFile, bucketArrayIndex);
+				//this will become store record
+				writeToBlock(employees[i], bucketArray, bucketArrayIndex);
+			} else {
+				cout << "NEED TO ALLOCATE NEW BLOCK" << endl;
+				newBucket(bucketArray, bucketArray[bucketArrayIndex].pFile, bucketArrayIndex);
+				bucketArrayIndex++;
+				//this will become store record
+				writeToBlock(employees[i], bucketArray, bucketArrayIndex);
+			}
+		// }
+	}
+
+	fclose(fp);
+}
+
+void lookup(string key) {
+	string block;
+
+	ifstream file("EmployeeIndex.txt");
+	
+	getline(file, block, '\n');
+	size_t found = block.find(key);
+
+	if(found) {
+		cout << "===========block===========\n" << block << endl;
+	}
+
+}
 
 //find which bucket to insert to
 //read in block to memory
