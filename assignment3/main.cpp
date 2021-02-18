@@ -206,6 +206,7 @@ void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
 	//string.replace
 	string employeeRecord;
 	employeeRecord.append(emp.id);
+	employeeRecord.append("*");
 	employeeRecord.append(emp.name);
 	employeeRecord.append(emp.bio);
 	employeeRecord.append(emp.manager);
@@ -260,6 +261,8 @@ void creation() {
 	}
 
 	int i = 0;
+	int size = employees.size();
+	bool entered[50] = {false};
 	for(int j = 0; j < employees.size(); j++){
 		for(int i = 0; i < bucketArray.size(); i++) {
 			string binaryEmpId = stringToBinary(employees[j].id);
@@ -274,12 +277,14 @@ void creation() {
 			// cout <<  "LSB EMP ID: " << lsbEmpId << endl;
 			// cout <<  "LSB BUCKET ID: " << lsbBucketId << endl;
 
-			if(lsbEmpId == lsbBucketId && bucketArray[i].numEmps < 5) {
-					// cout << "WILL WRITE TO BLOCK" << endl;
+			if(lsbEmpId == lsbBucketId && bucketArray[i].numEmps < 5 && entered[j] == false) {
+				// cout << "WILL WRITE TO BLOCK" << endl;
+				entered[j] = true;
 				writeToBlock(employees[j], bucketArray, i);
-			} else if(lsbBitsFlipped == lsbBucketId && bucketArray[i].numEmps < 5) {
+			} else if(lsbBitsFlipped == lsbBucketId && bucketArray[i].numEmps < 5 && entered[j] == false) {
 				// cout << "BITS FLIPPED" << endl;
 				// bucketArrayIndex++;
+				entered[j] = true;
 				writeToBlock(employees[j], bucketArray, i);
 				// i++;
 			} else {
@@ -297,16 +302,19 @@ void lookup(string key) {
 	string block;
 
 	ifstream file("EmployeeIndex.txt");
-	
+	bool flag = false;
 	while (getline(file, block, '\n')) {
 		// block contains key
 		// size_t found = block.find(key);
-		if (block.find(key) != std::string::npos) {
+		if (block.find(key + "*") != std::string::npos) {
     		cout << "===========block===========\n" << block << endl;
+			flag = true;
 			break;
-		}
+		} 
 	}
-	cout << "employee id not found" << endl;
+	if (flag == false) {
+		cout << "employee id not found" << endl;
+	}
 
 }
 
