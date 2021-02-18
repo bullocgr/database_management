@@ -219,42 +219,42 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 	// 	cout << "bits have been flipped" << endl;
 	// 	// binaryEmpIdCpy = bitFlip(leastSigEmpId);
 	// }
-	unsigned long long int leastSigEmpIdDec = stoull(leastSigEmpId, nullptr, 2);
-	unsigned long long int binaryEmpIdDec = stoull(binaryEmpId, nullptr, 2);
+	// unsigned long long int leastSigEmpIdDec = stoull(leastSigEmpId, nullptr, 2);
+	// unsigned long long int binaryEmpIdDec = stoull(binaryEmpId, nullptr, 2);
 
-	if(flipBitsBool == true) {
-		cout << "bits have been flipped" << endl;
-		binaryEmpIdCpy = bitFlip(leastSigEmpId);
-	}
-
-	unsigned long long int binaryEmpIdCpyDec = stoull(binaryEmpIdCpy, nullptr, 2);
-
-	cout << "least sig emp id: " << leastSigEmpId << endl;
-	cout << "BUCKET SIZE: " << bucketArray.size() << endl;
+	// if(flipBitsBool == true) {
+	// 	cout << "bits have been flipped" << endl;
+	// 	binaryEmpIdCpy = bitFlip(leastSigEmpId);
+	// }
 
 	// unsigned long long int binaryEmpIdCpyDec = stoull(binaryEmpIdCpy, nullptr, 2);
 
 	// cout << "least sig emp id: " << leastSigEmpId << endl;
 	// cout << "BUCKET SIZE: " << bucketArray.size() << endl;
 
-	// cout
-	// for(int j = 0; j < bucketArray.size(); j++) {
-		// string binaryBucketId = stringToBinary(to_string(bucketArray[j].id));
-		// string leastSigBucketBits = leastSigBits(i, binaryBucketId);
+	// // unsigned long long int binaryEmpIdCpyDec = stoull(binaryEmpIdCpy, nullptr, 2);
 
-		// unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+	// // cout << "least sig emp id: " << leastSigEmpId << endl;
+	// // cout << "BUCKET SIZE: " << bucketArray.size() << endl;
 
-		unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+	// // cout
+	// // for(int j = 0; j < bucketArray.size(); j++) {
+	// 	// string binaryBucketId = stringToBinary(to_string(bucketArray[j].id));
+	// 	// string leastSigBucketBits = leastSigBits(i, binaryBucketId);
 
-		//if we flip the bits use the new flipped bit value
-		// //otherwise use the original value
-		// // if((leastSigBucketBitsDec == binaryEmpIdCpyDec && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
-		// 	cout << "NUM EMPS: " << bucketArray[j].numEmps << endl;
-		// 	if(bucketArray[j].numEmps < 5) {
-		// 		writeToBlock(emp, bucketArray, j);
-		// 	} else {
-		// 		cout << "NEW BUCKET" << endl;
-		// 		bucketArray[j].numEmps = 0;
+	// 	// unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+
+	// 	unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+
+	// 	//if we flip the bits use the new flipped bit value
+	// 	// //otherwise use the original value
+	// 	// // if((leastSigBucketBitsDec == binaryEmpIdCpyDec && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
+	// 	// 	cout << "NUM EMPS: " << bucketArray[j].numEmps << endl;
+	// 	// 	if(bucketArray[j].numEmps < 5) {
+	// 	// 		writeToBlock(emp, bucketArray, j);
+	// 	// 	} else {
+	// 	// 		cout << "NEW BUCKET" << endl;
+	// 	// 		bucketArray[j].numEmps = 0;
 		// 		newBucket(bucketArray, bucketArray[j].pFile);
 		// 		writeToBlock(emp, bucketArray, j + 1);
 		// 		//then write to new bucket
@@ -264,23 +264,23 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 }
 
 
-void storeRecord(Emp emp, vector<Bucket> &bucketArray, int index) {
-		//otherwise use the original value
-	if((leastSigBucketBitsDec == binaryEmpIdCpyDec && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
-		cout << "NUM EMPS: " << bucketArray[j].numEmps << endl;
-		if(bucketArray[j].numEmps <= 5) {
-			writeToBlock(emp, bucketArray, j);
-		} else {
-			cout << "NEW BUCKET" << endl;
-			bucketArray[j].numEmps = 0;
-			newBucket(bucketArray, bucketArray[j].pFile);
-			writeToBlock(emp, bucketArray, j + 1);
-			//then write to new bucket
-		}
-	} else {
-		cout << "Bucket not found" << endl;
-	}
-}
+// void storeRecord(Emp emp, vector<Bucket> &bucketArray, int index) {
+// 		//otherwise use the original value
+// 	if((leastSigBucketBitsDec == binaryEmpIdCpyDec && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
+// 		cout << "NUM EMPS: " << bucketArray[j].numEmps << endl;
+// 		if(bucketArray[j].numEmps <= 5) {
+// 			writeToBlock(emp, bucketArray, j);
+// 		} else {
+// 			cout << "NEW BUCKET" << endl;
+// 			bucketArray[j].numEmps = 0;
+// 			newBucket(bucketArray, bucketArray[j].pFile);
+// 			writeToBlock(emp, bucketArray, j + 1);
+// 			//then write to new bucket
+// 		}
+// 	} else {
+// 		cout << "Bucket not found" << endl;
+// 	}
+// }
 
 
 
@@ -337,6 +337,7 @@ void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
 int incrementIndex(vector<Bucket> &bucketArray, int index, int j) {
 	int id = bucketArray[j].id;
 	// if(id )
+	return id;
 }
 
 
@@ -384,12 +385,15 @@ void lookup(string key) {
 
 	ifstream file("EmployeeIndex.txt");
 	
-	getline(file, block, '\n');
-	size_t found = block.find(key);
-
-	if(found) {
-		cout << "===========block===========\n" << block << endl;
+	while (getline(file, block, '\n')) {
+		// block contains key
+		// size_t found = block.find(key);
+		if (block.find(key) != std::string::npos) {
+    		cout << "===========block===========\n" << block << endl;
+			break;
+		}
 	}
+	cout << "employee id not found" << endl;
 
 }
 
