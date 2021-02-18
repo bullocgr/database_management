@@ -219,6 +219,18 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 	// 	cout << "bits have been flipped" << endl;
 	// 	// binaryEmpIdCpy = bitFlip(leastSigEmpId);
 	// }
+	unsigned long long int leastSigEmpIdDec = stoull(leastSigEmpId, nullptr, 2);
+	unsigned long long int binaryEmpIdDec = stoull(binaryEmpId, nullptr, 2);
+
+	if(flipBitsBool == true) {
+		cout << "bits have been flipped" << endl;
+		binaryEmpIdCpy = bitFlip(leastSigEmpId);
+	}
+
+	unsigned long long int binaryEmpIdCpyDec = stoull(binaryEmpIdCpy, nullptr, 2);
+
+	cout << "least sig emp id: " << leastSigEmpId << endl;
+	cout << "BUCKET SIZE: " << bucketArray.size() << endl;
 
 	// unsigned long long int binaryEmpIdCpyDec = stoull(binaryEmpIdCpy, nullptr, 2);
 
@@ -231,6 +243,8 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 		// string leastSigBucketBits = leastSigBits(i, binaryBucketId);
 
 		// unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
+
+		unsigned long long int leastSigBucketBitsDec = stoull(leastSigBucketBits, nullptr, 2);
 
 		//if we flip the bits use the new flipped bit value
 		// //otherwise use the original value
@@ -251,8 +265,23 @@ void storeRecord(Emp emp, vector<Bucket> &bucketArray, bool flipBitsBool, int i)
 
 
 void storeRecord(Emp emp, vector<Bucket> &bucketArray, int index) {
-
+		//otherwise use the original value
+	if((leastSigBucketBitsDec == binaryEmpIdCpyDec && flipBitsBool == true) || (leastSigBucketBits == leastSigEmpId && flipBitsBool == false)) {
+		cout << "NUM EMPS: " << bucketArray[j].numEmps << endl;
+		if(bucketArray[j].numEmps <= 5) {
+			writeToBlock(emp, bucketArray, j);
+		} else {
+			cout << "NEW BUCKET" << endl;
+			bucketArray[j].numEmps = 0;
+			newBucket(bucketArray, bucketArray[j].pFile);
+			writeToBlock(emp, bucketArray, j + 1);
+			//then write to new bucket
+		}
+	} else {
+		cout << "Bucket not found" << endl;
+	}
 }
+
 
 
 void newBucket(vector<Bucket> &bucketArray, FILE* fp, int index) {
@@ -263,8 +292,6 @@ void newBucket(vector<Bucket> &bucketArray, FILE* fp, int index) {
 		bucket.numEmps = 0;
 		bucketArray.push_back(bucket);
 		allocateBlock(bucketArray[index]);
-
-
 }
 
 void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
@@ -296,8 +323,6 @@ void writeToBlock(Emp emp, vector<Bucket> &bucketArray, int index) {
 	
 	cout << employeeRecord << endl;
 	block.replace(bucketArray[index].numEmps * 716, 716, employeeRecord);
-
-	cout << "SIZE OF BLOCK: " << block.size() << endl;
 
 	fseek(bucketArray[index].pFile, 4097*bucketArray[index].id, SEEK_SET);
 	fwrite(block.c_str(), sizeof(char), 4096, bucketArray[index].pFile);
