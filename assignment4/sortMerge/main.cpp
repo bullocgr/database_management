@@ -7,10 +7,6 @@
 
 using namespace std;
 
-int numEmployees;
-int numDepts;
-int M = 22;
-
 struct EmpBlock {
 	int eid;
 	string ename;
